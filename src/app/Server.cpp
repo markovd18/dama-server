@@ -3,7 +3,9 @@
 //
 
 #include "Server.h"
+#include "../socket/SocketListener.h"
 
-void Server::run(const std::string &params) {
-
+void Server::run() {
+    SocketListener listener(PORT);
+    listener.acceptConnections();
 }
