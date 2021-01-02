@@ -4,7 +4,10 @@
 
 #include "ParameterUtils.h"
 
-bool ParameterUtils::validateCLIparams(int argc, char** params) {
-    //
-    return true;
+namespace app {
+
+    void validateCLIparams(int argc, char** params) {
+        //
+    }
 }
+

@@ -42,7 +42,7 @@ void SocketListener::acceptConnections() {
     FD_SET(serverSocket, &clientSockets);
 
     socklen_t addressLength;
-    struct sockaddr_in peerAddress;
+    struct sockaddr_in peerAddress{};
 
     while (true) {
         sideSockets = clientSockets;
@@ -52,30 +52,33 @@ void SocketListener::acceptConnections() {
             return;
         }
 
-        for (int f_desc = FIRST_FD_INDEX; f_desc < FD_SETSIZE; ++f_desc) {
-            if (FD_ISSET(f_desc, &sideSockets)) {
-                if (f_desc == serverSocket) {
-                    int clientSocket = accept(serverSocket,(struct sockaddr*) &peerAddress, &addressLength);
-                    if (clientSocket < 0) {
-                        std::cout << "Error creating communication socket!\n";
-                        continue;
-                    }
+        for (int fileDescriptor = FIRST_FD_INDEX; fileDescriptor < FD_SETSIZE; ++fileDescriptor) {
+            if (!FD_ISSET(fileDescriptor, &sideSockets)) {
+                continue;
+            }
 
-                    FD_SET(clientSocket, &clientSockets);
-                    std::cout << "New client connection\n";
+            if (fileDescriptor == serverSocket) {
+                /// We found server socket - there is new incoming connection
+                int clientSocket = accept(serverSocket,(struct sockaddr*) &peerAddress, &addressLength);
+                if (clientSocket < 0) {
+                    std::cout << "Error creating communication socket!\n";
+                    continue;
+                }
+
+                FD_SET(clientSocket, &clientSockets);
+                std::cout << "New client connection\n";
+            } else {
+                /// We found client socket - there is incoming client message
+                int addressToRead;
+                int returnVal = ioctl(fileDescriptor, FIONREAD, &addressToRead);
+                std::cout << returnVal << std::endl;
+
+                if (addressToRead > 0) {
+                    //TODO markovda process client message
                 } else {
-                    // client socket
-                    int addressToRead;
-                    ioctl(f_desc, FIONREAD, &addressToRead);
-
-                    if (addressToRead > 0) {
-
-                        //TODO obsluha
-                    }
-                    // we disconnect the client even if he answers correctly
-                    close(f_desc);
-                    FD_CLR(f_desc, &clientSockets);
-                    std::cout << "Client disconnected\n";
+                    close(fileDescriptor);
+                    FD_CLR(fileDescriptor, &clientSockets);
+                    std::cout << "Error on socket, client disconnected" << std::endl;
                 }
             }
         }

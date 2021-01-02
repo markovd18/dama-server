@@ -10,16 +10,15 @@
 /**
  * Utility class for working with parameters and their validation.
  */
-class ParameterUtils {
-public:
+namespace app {
     /**
-     * Validates parameters from CLI.
+     *@brief Validates parameters from CLI.
      *
      * @param params CLI parameters
-     * @return true when parameters are valid, otherwise false
+     * @throw invalid_argument if arguments are invalid
      */
-    static bool validateCLIparams(int argc, char** params);
-};
+    void validateCLIparams(int argc, char** params);
+}
 
 
 #endif //DAMA_SERVER_PARAMETERUTILS_H

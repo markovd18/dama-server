@@ -15,7 +15,7 @@ private://private attributes
     /**
      * Default port that the server is listening on
      */
-    static constexpr int PORT = 8080;
+    static constexpr int PORT = 10000;
 public:
     /**
      * Starts the entire application.
