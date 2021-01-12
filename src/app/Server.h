@@ -11,18 +11,13 @@
  * Static class that represents the application. Handles the input parameters from commandline
  */
 class Server {
-private://private attributes
-    /**
-     * Default port that the server is listening on
-     */
-    static constexpr int PORT = 10000;
 public:
     /**
      * Starts the entire application.
      *
      * @param command line parameters
      */
-    static void run();
+    static void run(const std::string& address, unsigned int port);
 };
 
 

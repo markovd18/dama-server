@@ -1,5 +1,8 @@
 cmake-build-debug
+CMakeFiles
 .idea
+logs
+*.log
 
 dama_server
 server

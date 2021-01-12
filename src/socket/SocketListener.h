@@ -27,7 +27,7 @@ public: //public methods
      *
      * @param port port to listen on
      */
-    explicit SocketListener(int port);
+    explicit SocketListener(const std::string& address, unsigned int port);
     /**
      * In destructor we close the open socket.
      */
