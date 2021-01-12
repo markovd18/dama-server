@@ -34,6 +34,7 @@ namespace app {
     void Logger::log(const std::string &text, const std::string &level) {
         std::string logText = currentTime() + " " + level + "\t" + text + '\n';
         stream << logText;
+        stream.flush();
         std::cout << logText;
     }
 
