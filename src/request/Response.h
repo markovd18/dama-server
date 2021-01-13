@@ -1,0 +1,40 @@
+//
+// Author: markovd@students.zcu.cz
+//
+
+#ifndef DAMA_SERVER_RESPONSE_H
+#define DAMA_SERVER_RESPONSE_H
+
+#include <string>
+#include <utility>
+
+namespace app {
+
+    /**
+     * Class representing a response to a request from client.
+     */
+    class Response {
+    public: // public attributes
+        static constexpr int GENERAL_ERROR = 450;
+        static constexpr int INVALID_NICKNAME = 401;
+        static constexpr int INVALID_USERID = 402;
+    private: // private attributes
+        bool m_wasValid;
+        std::string m_message;
+    public: // public methods
+        Response(std::string  messsage, const bool wasRequestValid)
+                            : m_message(std::move(messsage)), m_wasValid(wasRequestValid) {
+        }
+
+        [[nodiscard]] bool wasRequestValid() const {
+            return m_wasValid;
+        }
+
+        [[nodiscard]] const std::string &getMessage() const {
+            return m_message;
+        }
+    };
+}
+
+
+#endif //DAMA_SERVER_RESPONSE_H

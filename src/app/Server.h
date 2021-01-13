@@ -8,7 +8,7 @@
 #include <string>
 
 /**
- * Static class that represents the application. Handles the input parameters from commandline
+ * Static class that represents the application. Handles the input parameters from commandline.
  */
 class Server {
 public:
@@ -17,7 +17,7 @@ public:
      *
      * @param command line parameters
      */
-    static void run(const std::string& address, unsigned int port);
+    static void run(int argc, char** argv);
 };
 
 

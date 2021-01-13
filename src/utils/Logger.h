@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 namespace app {
     /**
@@ -15,7 +16,7 @@ namespace app {
     class Logger {
     public:
         ~Logger() {
-            stream.close();
+            m_stream.close();
         }
 
         void error(const std::string &text);
@@ -33,11 +34,13 @@ namespace app {
 
         void log(const std::string& text, const std::string& level);
 
-        std::ofstream stream;
+        std::ofstream m_stream;
     };
 
     std::string currentTime();
 
     std::string currentDate();
+
+    std::string dateTimeInFormat(const char* format);
 }
 #endif //LOGGER_H

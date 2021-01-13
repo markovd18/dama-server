@@ -4,6 +4,9 @@
 
 #include <stdexcept>
 #include <vector>
+#include <string>
+#include <algorithm>
+#include "../app/config.h"
 #include "ParameterUtils.h"
 
 constexpr unsigned int FTP_DATA_PORT = 20;
@@ -15,12 +18,36 @@ constexpr unsigned int HTTP_PORT = 80;
 constexpr unsigned int POP3_PORT = 110;
 constexpr unsigned int SSL_PORT = 443;
 
+constexpr unsigned int MIN_CONNECTIONS = 2;
+constexpr unsigned int MIN_PARAMS_NUM = 5;
+constexpr unsigned int MIN_GAMES = 1;
+
+constexpr unsigned int MAX_NICK_LENGTH = 20;
+
 namespace app {
 
-    void validateCLIparams(int argc, char** params) {
-        if (argc < 3) {
+    app::config parseCliParams(int argc, char** params) {
+        if (argc < MIN_PARAMS_NUM) {
             throw std::invalid_argument("Invalid argument count!");
         }
+        if (!isIpAddress(params[1])) {
+            throw std::invalid_argument("Invalid IP address passed!");
+        }
+        unsigned int port;
+        if (!isNumber(params[2]) || ((port = atoi(params[2])) < 0)) {
+            throw std::invalid_argument("Invalid port number passed!");
+        }
+        int maxConnections;
+        if (!isNumber(params[3]) || ((maxConnections = atoi(params[3])) < MIN_CONNECTIONS)) {
+            throw std::invalid_argument("Invalid number of max connections passed!");
+        }
+        int maxGames;
+        if (!isNumber(params[4]) || ((maxGames = atoi(params[4])) < MIN_GAMES)) {
+            throw std::invalid_argument("Invalid number of max connections passed!");
+        }
+
+        app::config configuration { params[1], port, maxConnections, maxGames};
+        return configuration;
     }
 
     bool isPortFree(const unsigned int port) {
@@ -39,18 +66,10 @@ namespace app {
         }
     }
 
-    bool isIpAddress(std::string string) {
-        std::vector<std::string> tokens;
-        std::size_t pos;
-
-        while ((pos = string.find('.')) != std::string::npos) {
-            tokens.push_back(string.substr(0, pos));
-            string.erase(0, pos + 1);
-        }
-        if (string.empty()) {
+    bool isIpAddress(const std::string& string) {
+        std::vector<std::string> tokens(parseString(string, "."));
+        if (tokens.size() != 4) {
             return false;
-        } else {
-            tokens.push_back(string);
         }
 
         for (const auto &token : tokens) {
@@ -69,6 +88,38 @@ namespace app {
         }
 
         return true;
+    }
+
+    std::vector<std::string> parseString(std::string string, const std::string& delimiter) {
+        std::size_t pos;
+        std::vector<std::string> tokens;
+
+        while ((pos = string.find(delimiter)) != std::string::npos) {
+            tokens.push_back(string.substr(0, pos));
+            string.erase(0, pos + 1);
+        }
+
+        tokens.push_back(string);
+
+        return tokens;
+    }
+
+    bool isNumber(const std::string& string) {
+        if (string.empty()) {
+            return false;
+        }
+
+        return std::all_of(string.begin(), string.end(), [](const unsigned char c) { return isdigit(c); });
+    }
+
+    bool isValidNickname(const std::string& nickname) {
+        if (nickname.size() > MAX_NICK_LENGTH) {
+            return false;
+        }
+
+        return std::all_of(nickname.begin(), nickname.end(), [](const unsigned char c) {
+            return ((c > 'a' && c < 'z') || (c > 'A' && c < 'Z') || (c > 0 && c < 9));
+        });
     }
 }
 

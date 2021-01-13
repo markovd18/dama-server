@@ -5,12 +5,13 @@
 #include <fstream>
 #include <ctime>
 #include <filesystem>
+#include <string>
 #include "Logger.h"
 
 namespace app {
     Logger::Logger() {
         std::filesystem::create_directory("logs");
-        stream.open("logs/" + currentDate() + ".log", std::ios::app);
+        m_stream.open("logs/" + currentDate() + ".log", std::ios::app);
     }
 
     void Logger::error(const std::string &text) {
@@ -33,8 +34,8 @@ namespace app {
 
     void Logger::log(const std::string &text, const std::string &level) {
         std::string logText = currentTime() + " " + level + "\t" + text + '\n';
-        stream << logText;
-        stream.flush();
+        m_stream << logText;
+        m_stream.flush();
         std::cout << logText;
     }
 
@@ -44,18 +45,14 @@ namespace app {
     }
 
     std::string currentTime() {
-        time_t rawTime;
-        struct tm *timeInfo;
-        char buffer[80];
-
-        time(&rawTime);
-        timeInfo = localtime(&rawTime);
-
-        strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", timeInfo);
-        return std::string(buffer);
+        return dateTimeInFormat("%Y-%m-%d %H:%M:%S");
     }
 
     std::string currentDate() {
+        return dateTimeInFormat("%Y-%m-%d");
+    }
+
+    std::string dateTimeInFormat(const char* format) {
         time_t rawTime;
         struct tm *timeInfo;
         char buffer[80];
@@ -63,7 +60,7 @@ namespace app {
         time(&rawTime);
         timeInfo = localtime(&rawTime);
 
-        strftime(buffer, 80, "%Y-%m-%d", timeInfo);
+        strftime(buffer, 80, format, timeInfo);
         return std::string(buffer);
     }
 }
