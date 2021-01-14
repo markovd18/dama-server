@@ -9,6 +9,7 @@
 #include <vector>
 #include "../app/config.h"
 #include "../app/Connection.h"
+#include "../request/Response.h"
 
 /**
  * Class responsible for listening on given port and accepting client requests. This class serves as a connection
@@ -55,6 +56,7 @@ public: //public methods
 private: // private methods
     void disconnect(int socket, fd_set *clientSockets);
     void processInvalidRequest(int socket, fd_set *clientSockets);
+    void sendResponse(const app::Response& response, int socket);
 };
 
 

@@ -16,8 +16,14 @@ namespace app {
     class Response {
     public: // public attributes
         static constexpr int GENERAL_ERROR = 450;
-        static constexpr int INVALID_NICKNAME = 401;
-        static constexpr int INVALID_USERID = 402;
+        static constexpr int NEW_LOGIN_OK = 200;
+        static constexpr int RECONNECT_OK = 201;
+        static constexpr int LOGOUT_OK = 202;
+        static constexpr int INVALID_NICKNAME = 400;
+        static constexpr int INVALID_USERID = 401;
+        static constexpr int CANNOT_RECONNECT = 402;
+        static constexpr int LOGOUT_INVALID_USER = 403;
+        static constexpr int CANNOT_LOGOUT = 404;
     private: // private attributes
         bool m_wasValid;
         std::string m_message;

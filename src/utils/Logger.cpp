@@ -36,7 +36,9 @@ namespace app {
         std::string logText = currentTime() + " " + level + "\t" + text + '\n';
         m_stream << logText;
         m_stream.flush();
+#ifndef NDEBUG
         std::cout << logText;
+#endif
     }
 
     Logger &Logger::getInstance() {

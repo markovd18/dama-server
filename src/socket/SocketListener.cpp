@@ -104,7 +104,9 @@ void SocketListener::acceptConnections() {
                     std::array<char, BUFFER_LENGTH> buffer { 0 };
                     recv(fileDescriptor, buffer.data(), BUFFER_LENGTH, 0);
                     app::Logger::getInstance().debug(std::string("Incomming message: ") + buffer.data());
+
                     app::Response response(requestHandler.processRequest(buffer.data()));
+                    sendResponse(response, fileDescriptor);
                     if (!response.wasRequestValid()) {
                         processInvalidRequest(fileDescriptor, &clientSockets);
                     }
@@ -139,5 +141,14 @@ void SocketListener::processInvalidRequest(int socket, fd_set *clientSockets) {
                 app::Logger::getInstance().info("Client disconnected");
             }
         }
+    }
+}
+
+void SocketListener::sendResponse(const app::Response &response, const int socket) {
+    app::Logger::getInstance().debug(std::string("Sending message: ") + response.getMessage() + " through socket " + std::to_string(socket));
+
+    if (send(socket, response.getMessage().c_str(), response.getMessage().size(), 0) < 0) {
+        app::Logger::getInstance().error(
+                std::string("Error while sending message: ") + response.getMessage() + "through socket " + std::to_string(socket));
     }
 }

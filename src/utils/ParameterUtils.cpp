@@ -95,11 +95,11 @@ namespace app {
         std::vector<std::string> tokens;
 
         while ((pos = string.find(delimiter)) != std::string::npos) {
-            tokens.push_back(string.substr(0, pos));
+            tokens.push_back(trimString(string.substr(0, pos)));
             string.erase(0, pos + 1);
         }
 
-        tokens.push_back(string);
+        tokens.push_back(trimString(string));
 
         return tokens;
     }
@@ -118,8 +118,21 @@ namespace app {
         }
 
         return std::all_of(nickname.begin(), nickname.end(), [](const unsigned char c) {
-            return ((c > 'a' && c < 'z') || (c > 'A' && c < 'Z') || (c > 0 && c < 9));
+            return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= 0 && c <= 9));
         });
+    }
+
+    std::string trimString(const std::string& string) {
+        const char* whitespaces = " \n\t\r";
+
+        const auto strBegin = string.find_first_not_of(whitespaces);
+        if (strBegin == std::string::npos)
+            return ""; // no content
+
+        const auto strEnd = string.find_last_not_of(whitespaces);
+        const auto strRange = strEnd - strBegin + 1;
+
+        return string.substr(strBegin, strRange);
     }
 }
 

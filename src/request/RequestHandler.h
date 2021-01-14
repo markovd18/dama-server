@@ -15,7 +15,8 @@ namespace app {
      */
     enum RequestType {
         CONNECT = 0,
-        TURN = 1
+        LOGOUT = 1,
+        TURN = 2
     };
 
     /**
@@ -24,7 +25,7 @@ namespace app {
      class RequestHandler {
      private:// private attributes
          static constexpr char tokenDelimiter = '|';
-         static inline const std::string requestTypes[] = { "CONNECT", "TURN" };
+         static inline const std::string requestTypes[] = { "CONNECT", "LOGOUT", "TURN" };
 
          app::PlayerService playerService;
      public: // public methods
@@ -48,6 +49,7 @@ namespace app {
 
      private: // private methods
          app::Response processLoginRequest(int userId, const std::string& nickname);
+         app::Response processLogoutRequest(int userId);
      };
 }
 
