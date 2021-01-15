@@ -10,18 +10,18 @@ app::GameRepository &app::GameRepository::getInstance() {
     return repository;
 }
 
-void app::GameRepository::save(app::Game game) {
+void app::GameRepository::save(app::Game&& game) {
     m_games.emplace_back(game);
 }
 
-app::Game app::GameRepository::findOneByUserId(const int userId) {
+app::Game* app::GameRepository::findOneByUserId(const int userId) {
     for (auto &game : m_games) {
         if (game.getPlayer1() != nullptr && game.getPlayer1()->getUserId() == userId) {
-            return game;
+            return &game;
         } else if (game.getPlayer2() != nullptr && game.getPlayer2()->getUserId() == userId) {
-            return game;
+            return &game;
         }
     }
 
-    throw std::invalid_argument("Game not found!");
+    return nullptr;
 }

@@ -45,3 +45,25 @@ app::Player *app::Game::getPlayer1() {
 app::Player *app::Game::getPlayer2() {
     return m_player2;
 }
+
+bool app::Game::removePlayer(const int userId) {
+    if (m_player1 != nullptr && m_player1->getUserId() == userId) {
+        m_player1 = nullptr;
+        if (m_player2 != nullptr) {
+            m_player2->setState(app::PlayerState::IN_GAME_W);
+        }
+        return true;
+    } else if (m_player2 != nullptr && m_player2->getUserId() == userId) {
+        m_player2 = nullptr;
+        if (m_player1 != nullptr) {
+            m_player2->setState(app::PlayerState::IN_GAME_W);
+        }
+        return true;
+    }
+
+    return false;
+}
+
+bool app::Game::isEmpty() const {
+    return ((m_player1 == nullptr) && (m_player2 == nullptr));
+}

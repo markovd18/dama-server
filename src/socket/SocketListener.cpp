@@ -69,7 +69,7 @@ void SocketListener::acceptConnections() {
     socklen_t addressLength;
     struct sockaddr_in peerAddress{};
 
-    app::RequestHandler requestHandler;
+    app::RequestHandler requestHandler{};
     while (true) {
         sideSockets = clientSockets;
         int returnValue = select(FD_SETSIZE, &sideSockets, (fd_set *) nullptr, (fd_set *) nullptr, (struct timeval *) nullptr);
@@ -122,10 +122,14 @@ void SocketListener::acceptConnections() {
 void SocketListener::disconnect(int socket, fd_set *clientSockets) {
     for (int i = 0; i < m_connections.size(); ++i) {
         if (m_connections[i].getSocket() == socket) {
+            if (m_connections[i].getUserId() != 0) {
+                //m_playerService.setPlayerState(m_connections[i].getUserId(), app::PlayerState::DISCONNECTED);
+            }
             m_connections.erase(m_connections.begin() + i);
             close(socket);
             FD_CLR(socket, clientSockets);
             app::Logger::getInstance().info("Client disconnected");
+            break;
         }
     }
 }
@@ -135,16 +139,37 @@ void SocketListener::processInvalidRequest(int socket, fd_set *clientSockets) {
         if (m_connections[i].getSocket() == socket) {
             m_connections[i].incErrCount();
             if (m_connections[i].getErrorCount() == app::Connection::MAX_ERROR_COUNT) {
+                if (m_connections[i].getUserId() != 0) {
+                    // TODO markovda remove/set state to dc player
+                }
                 m_connections.erase(m_connections.begin() + i);
                 close(socket);
                 FD_CLR(socket, clientSockets);
                 app::Logger::getInstance().info("Client disconnected");
             }
+            break;
         }
     }
 }
 
 void SocketListener::sendResponse(const app::Response &response, const int socket) {
+    if (response.getMessage().find(std::to_string(app::Response::NEW_LOGIN_OK)) == 0) {
+        for (auto &connection : m_connections) {
+            if (connection.getSocket() == socket) {
+                connection.setUserId(atoi(app::parseString(response.getMessage(), "|")[1].c_str()));
+                break;
+            }
+        }
+    } else if (response.getMessage().find(std::to_string(app::Response::LOGOUT_OK)) == 0) {
+        for (auto &connection : m_connections) {
+            if (connection.getSocket() == socket) {
+                connection.setUserId(0);
+                break;
+            }
+        }
+    } else if (response.getMessage().find(std::to_string(app::Response::CREATE_GAME_OK)) == 0) {
+        // TODO markovda send broadcast
+    }
     app::Logger::getInstance().debug(std::string("Sending message: ") + response.getMessage() + " through socket " + std::to_string(socket));
 
     if (send(socket, response.getMessage().c_str(), response.getMessage().size(), 0) < 0) {

@@ -20,8 +20,8 @@ namespace app {
     public: // public methods
         static GameRepository& getInstance();
 
-        void save(app::Game game);
-        app::Game findOneByUserId(int userId);
+        void save(app::Game&& game);
+        app::Game* findOneByUserId(int userId);
 
     private: // private methods
         GameRepository() = default;

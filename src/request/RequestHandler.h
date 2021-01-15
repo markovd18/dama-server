@@ -7,6 +7,7 @@
 
 #include "Response.h"
 #include "../game/service/PlayerService.h"
+#include "../game/service/GameService.h"
 
 namespace app {
 
@@ -16,7 +17,9 @@ namespace app {
     enum RequestType {
         CONNECT = 0,
         LOGOUT = 1,
-        TURN = 2
+        CREATE_GAME = 2,
+        GET_GAMES = 3,
+        EXIT_GAME = 4
     };
 
     /**
@@ -25,9 +28,11 @@ namespace app {
      class RequestHandler {
      private:// private attributes
          static constexpr char tokenDelimiter = '|';
-         static inline const std::string requestTypes[] = { "CONNECT", "LOGOUT", "TURN" };
+         static inline const std::string requestTypes[] = { "CONNECT", "LOGOUT", "CREATE_GAME", "GET_GAMES",
+                                                            "EXIT_GAME"};
 
-         app::PlayerService playerService;
+         app::PlayerService m_playerService;
+         app::GameService m_gameService;
      public: // public methods
 
          /**
@@ -50,6 +55,10 @@ namespace app {
      private: // private methods
          app::Response processLoginRequest(int userId, const std::string& nickname);
          app::Response processLogoutRequest(int userId);
+
+         app::Response processCreateGameRequest(int userId);
+
+         app::Response processExitGameRequest(int userId);
      };
 }
 

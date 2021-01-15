@@ -36,6 +36,8 @@ namespace app {
         void addPayer(app::Player* player);
         void start();
         void pause();
+        bool removePlayer(int userId);
+        bool isEmpty() const;
     };
 }
 
