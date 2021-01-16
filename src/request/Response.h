@@ -32,6 +32,8 @@ namespace app {
         static constexpr int CREATE_GAME_FAIL_ID = 407;
         static constexpr int EXIT_GAME_FAIL_ID = 408;
         static constexpr int EXIT_GAME_FAIL_STATE = 409;
+
+        static constexpr int NEW_GAME = 250;
     private: // private attributes
         bool m_wasValid;
         std::string m_message;

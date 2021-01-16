@@ -28,10 +28,10 @@ namespace app {
         /// Players nickname
         std::string m_nickname;
         /// Players defining user ID
-        int m_userId;
+        int m_userId = 0;
         PlayerState m_state;
     public: // public methods
-        Player(int userId, std::string nickname);
+        explicit Player(std::string nickname);
 
         [[nodiscard]] const std::string &getNickname() const;
 
@@ -40,6 +40,13 @@ namespace app {
         [[nodiscard]] PlayerState getState() const;
 
         void setState(PlayerState mState);
+
+        /**
+         * Sets userId to given value. Note that this function should not be used anywhere in the program other than
+         * in the player repository save method to set proper value.
+         * @param userId value to set
+         */
+        void setUserId(int userId);
     };
 }
 

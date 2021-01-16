@@ -59,6 +59,8 @@ namespace app {
          app::Response processCreateGameRequest(int userId);
 
          app::Response processExitGameRequest(int userId);
+
+         app::Response processGetGamesRequest(int userId);
      };
 }
 

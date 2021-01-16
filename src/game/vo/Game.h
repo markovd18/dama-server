@@ -26,6 +26,7 @@ namespace app {
      */
     class Game {
     private: // private attributes
+        int m_gameId = 0;
         app::Player* m_player1;
         app::Player* m_player2;
         app::GameState m_state;
@@ -37,7 +38,15 @@ namespace app {
         void start();
         void pause();
         bool removePlayer(int userId);
-        bool isEmpty() const;
+        [[nodiscard]] bool isEmpty() const;
+        [[nodiscard]] int getId() const;
+        [[nodiscard]] GameState getState() const;
+
+        /**
+         * This function sets ID of the game to given value. Note, that this method should not be used anywhere
+         * in the program, but in the game repository, to set it proper value.
+         */
+        void setId(int gameId);
     };
 }
 

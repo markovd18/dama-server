@@ -5,8 +5,10 @@
 #ifndef DAMA_SERVER_GAMESERVICE_H
 #define DAMA_SERVER_GAMESERVICE_H
 
+#include <vector>
 #include "../vo/Player.h"
 #include "PlayerService.h"
+#include "../vo/Game.h"
 
 namespace app {
 
@@ -20,6 +22,8 @@ namespace app {
         void createNewGame(app::Player *player);
 
         void removePlayerFromGame(int userId);
+
+        std::vector<app::Game*> findLobbyGames();
     };
 }
 

@@ -39,7 +39,10 @@ Request to create a new game. Requesting player will be set as the first player,
 ### Response
 `204` - ok, new game created and joined\
 `406` - cannot create new game, not in lobby\
-`407` - cannot create new game, not logged in
+`407` - cannot create new game, not logged in\
+\
+When new game is created, every client in lobby gets response from server:\
+`250|<nickname>` - nickname is the nick of player who is in the game, waiting to be joined
 ## Exit game
 ### Request
 `<userId>|EXIT_GAME`

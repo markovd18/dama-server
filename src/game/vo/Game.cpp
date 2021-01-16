@@ -48,12 +48,14 @@ app::Player *app::Game::getPlayer2() {
 
 bool app::Game::removePlayer(const int userId) {
     if (m_player1 != nullptr && m_player1->getUserId() == userId) {
+        m_player1->setState(app::PlayerState::IN_LOBBY);
         m_player1 = nullptr;
         if (m_player2 != nullptr) {
             m_player2->setState(app::PlayerState::IN_GAME_W);
         }
         return true;
     } else if (m_player2 != nullptr && m_player2->getUserId() == userId) {
+        m_player2->setState(app::PlayerState::IN_LOBBY);
         m_player2 = nullptr;
         if (m_player1 != nullptr) {
             m_player2->setState(app::PlayerState::IN_GAME_W);
@@ -66,4 +68,21 @@ bool app::Game::removePlayer(const int userId) {
 
 bool app::Game::isEmpty() const {
     return ((m_player1 == nullptr) && (m_player2 == nullptr));
+}
+
+int app::Game::getId() const {
+    return m_gameId;
+}
+
+app::GameState app::Game::getState() const {
+    return m_state;
+}
+
+void app::Game::setId(int gameId) {
+    if (m_gameId != 0) {
+        return;
+    }
+    if (gameId > 0) {
+        m_gameId = gameId;
+    }
 }

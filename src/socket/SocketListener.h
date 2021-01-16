@@ -60,6 +60,7 @@ private: // private methods
     void disconnect(int socket, fd_set *clientSockets);
     void processInvalidRequest(int socket, fd_set *clientSockets);
     void sendResponse(const app::Response& response, int socket);
+    void sendMessage(const std::string& message, int socket);
 };
 
 

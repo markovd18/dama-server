@@ -17,7 +17,7 @@ namespace app {
     class PlayerRepository {
     private: // private attributes
         std::vector<app::Player> m_players;
-        int m_highestUserId = 0;
+        int m_availableId = 1;
 
     public: // public methods
         static PlayerRepository& getInstance();
@@ -26,7 +26,6 @@ namespace app {
         app::Player* findOne(const std::string& nickname);
         void save(app::Player&& player);
         app::Player remove(int userId);
-        [[nodiscard]] int getHighestId() const;
         [[nodiscard]] int getPlayerCount() const;
     private: // private methods
         PlayerRepository() = default;

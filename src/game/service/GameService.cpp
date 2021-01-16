@@ -19,7 +19,11 @@ void app::GameService::removePlayerFromGame(const int userId) {
     if (game != nullptr) {
         game->removePlayer(userId);
         if (game->isEmpty()) {
-            //TODO markovda
+            app::GameRepository::getInstance().remove(game->getId());
         }
     }
+}
+
+std::vector<app::Game*> app::GameService::findLobbyGames() {
+    return app::GameRepository::getInstance().findAllByState(app::GameState::WAITING);
 }

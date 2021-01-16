@@ -7,12 +7,10 @@
 #include "../../utils/Logger.h"
 
 app::Player* app::PlayerService::addNewPlayer(const std::string &nickname) {
-    int userId = app::PlayerRepository::getInstance().getHighestId() + 1;
+    app::Logger::getInstance().debug("Adding new player " + nickname);
+    app::PlayerRepository::getInstance().save(app::Player(nickname));
 
-    app::PlayerRepository::getInstance().save(app::Player(userId, nickname));
-
-    app::Logger::getInstance().debug("Added new player: ID=" + std::to_string(userId) + ", Nickname=" + nickname);
-    return app::PlayerRepository::getInstance().findOne(userId);
+    return app::PlayerRepository::getInstance().findOne(nickname);
 }
 
 app::Player* app::PlayerService::findPlayer(const int userId) {

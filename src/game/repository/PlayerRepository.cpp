@@ -11,6 +11,9 @@ app::PlayerRepository& app::PlayerRepository::getInstance() {
 }
 
 app::Player* app::PlayerRepository::findOne(const int userId) {
+    if (userId <= 0) {
+        return nullptr;
+    }
     for (auto &player : m_players) {
         if (player.getUserId() == userId) {
             return &player;
@@ -31,10 +34,17 @@ app::Player *app::PlayerRepository::findOne(const std::string &nickname) {
 }
 
 void app::PlayerRepository::save(app::Player&& player) {
-    if (player.getUserId() > m_highestUserId) {
-        m_highestUserId++;
+    if (player.getUserId() != 0) {
+        for (auto &m_player : m_players) {
+            if (m_player.getUserId() == player.getUserId()) {
+                m_player = player;
+            }
+        }
+    } else {
+        player.setUserId(m_availableId);
+        m_players.emplace_back(std::move(player));
+        m_availableId++;
     }
-    m_players.emplace_back(std::move(player));
 }
 
 app::Player app::PlayerRepository::remove(const int userId) {
@@ -47,10 +57,6 @@ app::Player app::PlayerRepository::remove(const int userId) {
     }
 
     throw std::invalid_argument(std::string("Player with userId ") + std::to_string(userId) + "not found");
-}
-
-int app::PlayerRepository::getHighestId() const {
-    return m_highestUserId;
 }
 
 int app::PlayerRepository::getPlayerCount() const {

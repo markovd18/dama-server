@@ -52,7 +52,7 @@ SocketListener::SocketListener(const app::config& configuration) : m_maxConnecti
         throw ConnectionException("Error while trying to start listening on server socket");
     }
 
-    //TODO markovda process mac games info
+    //TODO markovda process max games info
     app::Logger::getInstance().info(std::string("Listenning at " )
             + configuration.address + ":" + std::to_string(configuration.port));
     app::Logger::getInstance().info(std::string("Configured with ") + std::to_string(configuration.maxConnections)
@@ -168,12 +168,31 @@ void SocketListener::sendResponse(const app::Response &response, const int socke
             }
         }
     } else if (response.getMessage().find(std::to_string(app::Response::CREATE_GAME_OK)) == 0) {
-        // TODO markovda send broadcast
-    }
-    app::Logger::getInstance().debug(std::string("Sending message: ") + response.getMessage() + " through socket " + std::to_string(socket));
+        app::Logger::getInstance().debug("Sending broadcast with message " + response.getMessage());
+        for (const auto &connection : m_connections) {
+            app::Player* player = m_playerService.findPlayer(connection.getUserId());
+            if (player != nullptr && player->getState() == app::PlayerState::IN_LOBBY) {
+                app::Player* opponent;
+                for (const auto &gameCreator : m_connections) {
+                    if (gameCreator.getSocket() == socket) {
+                        opponent = m_playerService.findPlayer(gameCreator.getUserId());
+                    }
+                }
 
-    if (send(socket, response.getMessage().c_str(), response.getMessage().size(), 0) < 0) {
+                std::string newGameResponse = std::to_string(app::Response::NEW_GAME) + '|' + opponent->getNickname() + '\n';
+                sendMessage(newGameResponse, connection.getSocket());
+            }
+        }
+    }
+
+    sendMessage(response.getMessage(), socket);
+}
+
+void SocketListener::sendMessage(const std::string& message,const int socket) {
+    app::Logger::getInstance().debug(
+            std::string("Sending message: ") + message + " through socket " + std::to_string(socket));
+    if (send(socket, message.c_str(), message.size(), 0) < 0) {
         app::Logger::getInstance().error(
-                std::string("Error while sending message: ") + response.getMessage() + "through socket " + std::to_string(socket));
+                "Error while sending message: " + message + "through socket " + std::to_string(socket));
     }
 }
