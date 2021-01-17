@@ -8,9 +8,10 @@
 #include <unistd.h>
 #include <vector>
 #include "../app/config.h"
-#include "Connection.h"
+#include "vo/Connection.h"
 #include "../request/Response.h"
 #include "../game/service/PlayerService.h"
+#include "service/ConnectionService.h"
 
 /**
  * Class responsible for listening on given port and accepting client requests. This class serves as a connection
@@ -27,9 +28,7 @@ private: //private attributes
      */
     int m_maxConnectionsAllowed = 2;
 
-    std::vector<app::Connection> m_connections;
-
-    app::PlayerService m_playerService;
+    app::ConnectionService m_connectionService;
     /**
      * First file descriptor index in fd-set to read.
      */

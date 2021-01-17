@@ -47,16 +47,13 @@ void app::PlayerRepository::save(app::Player&& player) {
     }
 }
 
-app::Player app::PlayerRepository::remove(const int userId) {
+void app::PlayerRepository::remove(const int userId) {
     for (int i = 0; i < m_players.size(); ++i) {
         if (m_players[i].getUserId() == userId) {
-            app::Player removedPlayer(m_players[i]);
             m_players.erase(m_players.begin() + i);
-            return removedPlayer;
+            return;
         }
     }
-
-    throw std::invalid_argument(std::string("Player with userId ") + std::to_string(userId) + "not found");
 }
 
 int app::PlayerRepository::getPlayerCount() const {

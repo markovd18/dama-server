@@ -10,7 +10,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # find all files in src/*** subdirectories
 file(GLOB APP src/app/*.h src/app/*.cpp)
-file(GLOB SOCKET src/socket/*.h src/socket/*.cpp)
+file(GLOB SOCKET_REPO src/socket/repository/*.h src/socket/repository/*.cpp)
+file(GLOB SOCKET_SERVICE src/socket/service/*.h src/socket/service/*.cpp)
+file(GLOB SOCKET_VO src/socket/vo/*.h src/socket/vo/*.cpp)
+file(GLOB SOCKET src/socket/*.h src/socket/*.cpp ${SOCKET_REPO} ${SOCKET_SERVICE} ${SOCKET_VO})
 file(GLOB UTILS src/utils/*.h src/utils/*.cpp)
 file(GLOB EXCEPTION src/exception/*.h src/exception/*.cpp)
 file(GLOB REQUEST src/request/*.h src/request/*.cpp)

@@ -24,28 +24,17 @@ namespace app {
          * Constructs connection instance at given socket and zero error count.
          * @param socket connection socket
          */
-        explicit Connection(int socket)
-                            : m_socket(socket) {}
+        explicit Connection(int socket);
 
-        [[nodiscard]] int getSocket() const {
-            return m_socket;
-        }
+        [[nodiscard]] int getSocket() const;
 
-        [[nodiscard]] int getErrorCount() const {
-            return m_errorCount;
-        }
+        [[nodiscard]] int getErrorCount() const;
 
-        void incErrCount() {
-            m_errorCount++;
-        }
+        void incErrCount();
 
-        [[nodiscard]] int getUserId() const {
-            return m_userId;
-        }
+        [[nodiscard]] int getUserId() const;
 
-        void setUserId(const int userId) {
-            m_userId = userId;
-        }
+        void setUserId(int userId);
     };
 }
 

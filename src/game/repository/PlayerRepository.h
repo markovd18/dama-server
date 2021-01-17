@@ -25,7 +25,7 @@ namespace app {
         app::Player* findOne(int userId);
         app::Player* findOne(const std::string& nickname);
         void save(app::Player&& player);
-        app::Player remove(int userId);
+        void remove(int userId);
         [[nodiscard]] int getPlayerCount() const;
     private: // private methods
         PlayerRepository() = default;

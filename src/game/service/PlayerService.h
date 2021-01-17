@@ -53,7 +53,7 @@ namespace app {
          * @throw invalid_argument if player with given user ID is not found
          *
          */
-        app::Player deletePlayer(int userId);
+        void deletePlayer(int userId);
     };
 }
 

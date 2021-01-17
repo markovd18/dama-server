@@ -23,7 +23,7 @@ app::Player *app::PlayerService::findPlayer(const std::string &nickname) {
     return app::PlayerRepository::getInstance().findOne(nickname);
 }
 
-app::Player app::PlayerService::deletePlayer(const int userId) {
+void app::PlayerService::deletePlayer(const int userId) {
     app::Logger::getInstance().debug("Deleting player with user ID: " + std::to_string(userId));
-    return app::PlayerRepository::getInstance().remove(userId);
+    app::PlayerRepository::getInstance().remove(userId);
 }

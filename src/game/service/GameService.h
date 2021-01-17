@@ -9,6 +9,7 @@
 #include "../vo/Player.h"
 #include "PlayerService.h"
 #include "../vo/Game.h"
+#include "../../socket/service/ConnectionService.h"
 
 namespace app {
 
@@ -18,6 +19,7 @@ namespace app {
     class GameService {
     private: // private attributes
         app::PlayerService m_playerService;
+        app::ConnectionService m_connectionService;
     public: // public methods
         void createNewGame(app::Player *player);
 

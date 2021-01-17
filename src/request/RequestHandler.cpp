@@ -64,6 +64,7 @@ app::Response app::RequestHandler::processLoginRequest(const int userId, const s
     app::Player* player = m_playerService.findPlayer(nickname);
     if (player != nullptr) { /// Player already exists, reconnect request
         if (player->getState() == app::PlayerState::DISCONNECTED) {
+            //TODO markovda reconnect to previous state based on the game he's in
             return app::Response(std::to_string(app::Response::RECONNECT_OK) + '\n', true);
         } else {
             return app::Response(std::to_string(app::Response::CANNOT_RECONNECT) + '\n', false);
@@ -90,6 +91,7 @@ app::Response app::RequestHandler::processLogoutRequest(const int userId) {
     }
 
     m_playerService.deletePlayer(userId);
+    m_connectionService.findConnectionByUser(userId)->setUserId(0);
     app::Logger::getInstance().debug("Player logged out.");
     return app::Response(std::to_string(app::Response::LOGOUT_OK) + '\n', true);
 }
@@ -108,6 +110,7 @@ app::Response app::RequestHandler::processCreateGameRequest(const int userId) {
     }
 
     m_gameService.createNewGame(player);
+    m_connectionService.sendGameCreatedResponse(player->getNickname());
     app::Logger::getInstance().debug("New game created!");
     return app::Response(std::to_string(app::Response::CREATE_GAME_OK) + '\n', true);
 }

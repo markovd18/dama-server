@@ -33,6 +33,7 @@ namespace app {
 
          app::PlayerService m_playerService;
          app::GameService m_gameService;
+         app::ConnectionService m_connectionService;
      public: // public methods
 
          /**
@@ -47,8 +48,8 @@ namespace app {
 
          /**
           * Returns string representation (name) of given request type.
-          * @param requestType
-          * @return
+          * @param requestType request type to turn into string
+          * @return name of the request type
           */
          static std::string getRequestTypeName(RequestType requestType);
 

@@ -3,7 +3,6 @@
 //
 
 #include "GameService.h"
-#include "../vo/Game.h"
 #include "../repository/GameRepository.h"
 
 void app::GameService::createNewGame(app::Player *player) {
@@ -19,6 +18,9 @@ void app::GameService::removePlayerFromGame(const int userId) {
     if (game != nullptr) {
         game->removePlayer(userId);
         if (game->isEmpty()) {
+            if (game->getState() == app::GameState::WAITING) {
+                m_connectionService.sendGameDeletedResponse(userId);
+            }
             app::GameRepository::getInstance().remove(game->getId());
         }
     }

@@ -92,7 +92,7 @@ void SocketListener::acceptConnections() {
                 }
 
                 FD_SET(clientSocket, &clientSockets);
-                m_connections.emplace_back(app::Connection(clientSocket));
+                m_connectionService.addNewConnection(clientSocket);
                 app::Logger::getInstance().info("New client connection");
             } else {
                 /// We found client socket - there is incoming client message
@@ -106,9 +106,21 @@ void SocketListener::acceptConnections() {
                     app::Logger::getInstance().debug(std::string("Incomming message: ") + buffer.data());
 
                     app::Response response(requestHandler.processRequest(buffer.data()));
-                    sendResponse(response, fileDescriptor);
+                    /**
+                     * Check for login attempt has to be here, because here we know from which socket the request came from.
+                     */
+                    if (response.getMessage().find(std::to_string(app::Response::NEW_LOGIN_OK)) == 0) {
+                        m_connectionService.findConnection(fileDescriptor)->setUserId(atoi(app::parseString(response.getMessage(), "|")[1].c_str()));
+                    }
+                    m_connectionService.sendResponse(response, fileDescriptor);
+
                     if (!response.wasRequestValid()) {
-                        processInvalidRequest(fileDescriptor, &clientSockets);
+                        bool disconnected = m_connectionService.processInvalidRequest(fileDescriptor);
+                        if (disconnected) {
+                            FD_CLR(fileDescriptor, &clientSockets);
+                            close(fileDescriptor);
+                            app::Logger::getInstance().info("Client disconnected!");
+                        }
                     }
                 } else {
                     /// Client disconnected
@@ -120,79 +132,8 @@ void SocketListener::acceptConnections() {
 }
 
 void SocketListener::disconnect(int socket, fd_set *clientSockets) {
-    for (int i = 0; i < m_connections.size(); ++i) {
-        if (m_connections[i].getSocket() == socket) {
-            if (m_connections[i].getUserId() != 0) {
-                //m_playerService.setPlayerState(m_connections[i].getUserId(), app::PlayerState::DISCONNECTED);
-            }
-            m_connections.erase(m_connections.begin() + i);
-            close(socket);
-            FD_CLR(socket, clientSockets);
-            app::Logger::getInstance().info("Client disconnected");
-            break;
-        }
-    }
-}
-
-void SocketListener::processInvalidRequest(int socket, fd_set *clientSockets) {
-    for (int i = 0; i < m_connections.size(); ++i) {
-        if (m_connections[i].getSocket() == socket) {
-            m_connections[i].incErrCount();
-            if (m_connections[i].getErrorCount() == app::Connection::MAX_ERROR_COUNT) {
-                if (m_connections[i].getUserId() != 0) {
-                    // TODO markovda remove/set state to dc player
-                }
-                m_connections.erase(m_connections.begin() + i);
-                close(socket);
-                FD_CLR(socket, clientSockets);
-                app::Logger::getInstance().info("Client disconnected");
-            }
-            break;
-        }
-    }
-}
-
-void SocketListener::sendResponse(const app::Response &response, const int socket) {
-    if (response.getMessage().find(std::to_string(app::Response::NEW_LOGIN_OK)) == 0) {
-        for (auto &connection : m_connections) {
-            if (connection.getSocket() == socket) {
-                connection.setUserId(atoi(app::parseString(response.getMessage(), "|")[1].c_str()));
-                break;
-            }
-        }
-    } else if (response.getMessage().find(std::to_string(app::Response::LOGOUT_OK)) == 0) {
-        for (auto &connection : m_connections) {
-            if (connection.getSocket() == socket) {
-                connection.setUserId(0);
-                break;
-            }
-        }
-    } else if (response.getMessage().find(std::to_string(app::Response::CREATE_GAME_OK)) == 0) {
-        app::Logger::getInstance().debug("Sending broadcast with message " + response.getMessage());
-        for (const auto &connection : m_connections) {
-            app::Player* player = m_playerService.findPlayer(connection.getUserId());
-            if (player != nullptr && player->getState() == app::PlayerState::IN_LOBBY) {
-                app::Player* opponent;
-                for (const auto &gameCreator : m_connections) {
-                    if (gameCreator.getSocket() == socket) {
-                        opponent = m_playerService.findPlayer(gameCreator.getUserId());
-                    }
-                }
-
-                std::string newGameResponse = std::to_string(app::Response::NEW_GAME) + '|' + opponent->getNickname() + '\n';
-                sendMessage(newGameResponse, connection.getSocket());
-            }
-        }
-    }
-
-    sendMessage(response.getMessage(), socket);
-}
-
-void SocketListener::sendMessage(const std::string& message,const int socket) {
-    app::Logger::getInstance().debug(
-            std::string("Sending message: ") + message + " through socket " + std::to_string(socket));
-    if (send(socket, message.c_str(), message.size(), 0) < 0) {
-        app::Logger::getInstance().error(
-                "Error while sending message: " + message + "through socket " + std::to_string(socket));
-    }
+    m_connectionService.disconnect(socket);
+    close(socket);
+    FD_CLR(socket, clientSockets);
+    app::Logger::getInstance().info("Client disconnected");
 }
