@@ -24,12 +24,20 @@ void app::Game::addPayer(app::Player *player) {
     }
 }
 
-void app::Game::start() {
-    if (m_state == GameState::PLAYING) {
-        return;
+bool app::Game::start() {
+    if (m_state == GameState::PLAYING || ((m_player1 == nullptr) || (m_player2 == nullptr))) {
+        return false;
+    }
+    if (m_player1->getState() == app::PlayerState::DISCONNECTED ||
+        m_player2->getState() == app::PlayerState::DISCONNECTED) {
+        return false;
     }
 
+    if (m_state == GameState::WAITING) {
+        initializeTokens();
+    }
     m_state = GameState::PLAYING;
+    return true;
 }
 
 void app::Game::pause() {
@@ -50,16 +58,10 @@ bool app::Game::removePlayer(const int userId) {
     if (m_player1 != nullptr && m_player1->getUserId() == userId) {
         m_player1->setState(app::PlayerState::IN_LOBBY);
         m_player1 = nullptr;
-        if (m_player2 != nullptr) {
-            m_player2->setState(app::PlayerState::IN_GAME_W);
-        }
         return true;
     } else if (m_player2 != nullptr && m_player2->getUserId() == userId) {
         m_player2->setState(app::PlayerState::IN_LOBBY);
         m_player2 = nullptr;
-        if (m_player1 != nullptr) {
-            m_player2->setState(app::PlayerState::IN_GAME_W);
-        }
         return true;
     }
 
@@ -85,4 +87,29 @@ void app::Game::setId(int gameId) {
     if (gameId > 0) {
         m_gameId = gameId;
     }
+}
+
+void app::Game::initializeTokens() {
+    player1Tokens.emplace_back(app::Token(0, 1));
+    player1Tokens.emplace_back(app::Token(0, 3));
+    player1Tokens.emplace_back(app::Token(0, 5));
+    player1Tokens.emplace_back(app::Token(1, 0));
+    player1Tokens.emplace_back(app::Token(1, 2));
+    player1Tokens.emplace_back(app::Token(1, 4));
+
+    player2Tokens.emplace_back(app::Token(4, 1));
+    player2Tokens.emplace_back(app::Token(4, 3));
+    player2Tokens.emplace_back(app::Token(4, 5));
+    player2Tokens.emplace_back(app::Token(5, 0));
+    player2Tokens.emplace_back(app::Token(5, 2));
+    player2Tokens.emplace_back(app::Token(5, 4));
+
+}
+
+const std::vector<app::Token> *app::Game::getPlayer1Tokens() const {
+    return &player1Tokens;
+}
+
+const std::vector<app::Token> *app::Game::getPlayer2Tokens() const {
+    return &player2Tokens;
 }

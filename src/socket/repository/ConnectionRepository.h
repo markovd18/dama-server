@@ -6,6 +6,7 @@
 #define DAMA_SERVER_CONNECTIONREPOSITORY_H
 
 #include <vector>
+#include <list>
 #include "../vo/Connection.h"
 #include "../../game/vo/Player.h"
 
@@ -17,14 +18,14 @@ namespace app {
      */
     class ConnectionRepository {
     private: // private attributes
-        std::vector<app::Connection> m_connections;
+        std::list<app::Connection> m_connections;
     public: // public methods
         static ConnectionRepository& getInstance();
         app::Connection* findOne(int socket);
         app::Connection* findOneByUserId(int userId);
         void save(app::Connection&& connection);
-        app::Connection remove(int socket);
-        std::vector<app::Connection*> findAllByPlayerState(app::PlayerState state);
+        void remove(int socket);
+        std::list<app::Connection*> findAllByPlayerState(app::PlayerState state);
     private: // private methods
         ConnectionRepository() = default;
     };

@@ -35,15 +35,18 @@ app::Game* app::GameRepository::findOneByUserId(const int userId) {
 }
 
 void app::GameRepository::remove(const int gameId) {
-    for (int i = 0; i < m_games.size(); ++i) {
-        if (m_games[i].getId() == gameId) {
-            m_games.erase(m_games.begin() + i);
+    auto it = m_games.begin();
+    while (it != m_games.end()) {
+        if (it->getId() == gameId) {
+            m_games.erase(it);
+            break;
         }
+        it++;
     }
 }
 
-std::vector<app::Game*> app::GameRepository::findAllByState(const app::GameState state) {
-    std::vector<app::Game*> games;
+std::list<app::Game*> app::GameRepository::findAllByState(const app::GameState state) {
+    std::list<app::Game*> games;
     for (auto &game : m_games) {
         if (game.getState() == state) {
             games.push_back(&game);
@@ -51,4 +54,16 @@ std::vector<app::Game*> app::GameRepository::findAllByState(const app::GameState
     }
 
     return games;
+}
+
+app::Game *app::GameRepository::findOneByStateAndNickname(app::GameState state, const std::string &playerNickname) {
+    for (auto &game : m_games) {
+        if ((game.getState() == state) &&
+                ((game.getPlayer1() != nullptr && game.getPlayer1()->getNickname() == playerNickname) ||
+                game.getPlayer2() != nullptr && game.getPlayer2()->getNickname() == playerNickname)) {
+            return &game;
+        }
+    }
+
+    return nullptr;
 }

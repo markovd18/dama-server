@@ -34,8 +34,16 @@ namespace app {
 
         void addNewConnection(int socket);
 
+        void sendGameStartedResponse(Player *foundingPlayer);
+
+        void sendOpponentLeftResponse(int userId);
+
+        void sendGameResumedResponse(int userId);
+
     private: // private methods
         void sendMessage(const std::string& message, int socket);
+
+        void sendOpponentDisconnectedResponse(int userId);
     };
 }
 

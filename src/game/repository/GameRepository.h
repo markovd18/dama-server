@@ -6,6 +6,7 @@
 #define DAMA_SERVER_GAMEREPOSITORY_H
 
 #include <vector>
+#include <list>
 #include "../vo/Game.h"
 
 namespace app {
@@ -16,7 +17,7 @@ namespace app {
      */
     class GameRepository {
     private: // private attributes
-        std::vector<app::Game> m_games;
+        std::list<app::Game> m_games;
         int m_availableId = 1;
     public: // public methods
         static GameRepository& getInstance();
@@ -33,7 +34,9 @@ namespace app {
 
         void remove(int gameId);
 
-        std::vector<app::Game*> findAllByState(GameState state);
+        std::list<app::Game*> findAllByState(GameState state);
+
+        Game *findOneByStateAndNickname(GameState state, const std::string &playerNickname);
 
     private: // private methods
         GameRepository() = default;

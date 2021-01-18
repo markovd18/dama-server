@@ -6,6 +6,8 @@
 #define DAMA_SERVER_GAMESERVICE_H
 
 #include <vector>
+#include <array>
+#include <list>
 #include "../vo/Player.h"
 #include "PlayerService.h"
 #include "../vo/Game.h"
@@ -18,14 +20,21 @@ namespace app {
      */
     class GameService {
     private: // private attributes
-        app::PlayerService m_playerService;
         app::ConnectionService m_connectionService;
     public: // public methods
         void createNewGame(app::Player *player);
 
         void removePlayerFromGame(int userId);
 
-        std::vector<app::Game*> findLobbyGames();
+        std::list<app::Game*> findLobbyGames();
+
+        Game *findWaitingGame(const std::string &playerNickname);
+
+        void startNewGame(Game *game);
+
+        std::array<const std::vector<app::Token>*, 2> getGameTokens(int userId);
+
+        app::Game* findGame(int userId);
     };
 }
 

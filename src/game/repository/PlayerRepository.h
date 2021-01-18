@@ -6,6 +6,7 @@
 #define DAMA_SERVER_PLAYERREPOSITORY_H
 
 #include <vector>
+#include <list>
 #include "../vo/Player.h"
 
 namespace app {
@@ -16,7 +17,7 @@ namespace app {
      */
     class PlayerRepository {
     private: // private attributes
-        std::vector<app::Player> m_players;
+        std::list<app::Player> m_players;
         int m_availableId = 1;
 
     public: // public methods

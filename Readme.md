@@ -53,13 +53,17 @@ When new game is created, every client in lobby gets response from server:\
 \
 When player, who created new game, exits the game during waiting for opponent to join, every client in lobby
 gets response from server:\
-`260|<nickname>\n` - nickname is the nick of player who left the game, waiting to be joined
+`260|<nickname>\n` - nickname is the nick of player who left the game, waiting to be joined\
+When player leaves running game, opponent receives `280` response, meaning that he won and will be removed from the game.\
+When client crashes unexpectedly or is disconnected due to too many invalid requests, the player's state is set to disconnected 
+and if he is in the game, the game is paused and the opponent receives `290` response, meaning that the opponent has lost connection.
 ## Join game
 ### Request
 `<userId>|JOIN_GAME|<nickname>\n` - nickname stands for nickname of opponent to be joined
 ### Response
 `206` - ok, game joined and started
 Joining player is always player number two.\
+Player who was waiting to be joined, receives `270` response and should request a game state\
 `410\n` - cannot join game, not logged in\
 `411\n` - cannot join game, invalid state (only players in lobby may join a game)\
 `412\n` - cannot join game, waiting game with player with given nick non existent

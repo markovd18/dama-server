@@ -6,11 +6,12 @@
 #include "ConnectionService.h"
 #include "../repository/ConnectionRepository.h"
 #include "../../utils/Logger.h"
+#include "../../game/repository/GameRepository.h"
 
 void app::ConnectionService::sendGameDeletedResponse(const int userId) {
     app::Player* player = m_playerService.findPlayer(userId);
     if (player != nullptr) {
-        std::vector<app::Connection*> lobbyConnections =
+        std::list<app::Connection*> lobbyConnections =
                 app::ConnectionRepository::getInstance().findAllByPlayerState(app::PlayerState::IN_LOBBY);
 
         std::string message = std::to_string(app::Response::GAME_DELETED) + '|' + player->getNickname() + '\n';
@@ -23,15 +24,56 @@ void app::ConnectionService::sendGameDeletedResponse(const int userId) {
 }
 
 void app::ConnectionService::sendGameCreatedResponse(const std::string& userNick) {
-    std::vector<app::Connection*> lobbyConnections =
+    std::list<app::Connection*> lobbyConnections =
             app::ConnectionRepository::getInstance().findAllByPlayerState(app::PlayerState::IN_LOBBY);
 
     std::string message = std::to_string(app::Response::NEW_GAME) + '|' + userNick + '\n';
     for (const auto &connection: lobbyConnections) {
         app::Player* player = m_playerService.findPlayer(userNick);
-        if (player != nullptr && player->getNickname() != userNick) {
+        if (player != nullptr && player->getNickname() == userNick) {
             sendMessage(message, connection->getSocket());
         }
+    }
+}
+
+void app::ConnectionService::sendGameStartedResponse(app::Player *foundingPlayer) {
+    if (foundingPlayer == nullptr) {
+        return;
+    }
+
+    app::Connection* connection = app::ConnectionRepository::getInstance().findOneByUserId(foundingPlayer->getUserId());
+    if (connection == nullptr) {
+        return;
+    }
+
+    std::string message = std::to_string(app::Response::GAME_STARTED) + '\n';
+    sendMessage(message, connection->getSocket());
+}
+
+void app::ConnectionService::sendOpponentLeftResponse(const int userId) {
+    app::Player* player = m_playerService.findPlayer(userId);
+    if (player != nullptr) {
+        app::Connection* connection = findConnectionByUser(userId);
+        std::string message = std::to_string(app::Response::OPPONENT_LEFT) + '\n';
+        sendMessage(message, connection->getSocket());
+    }
+}
+
+void app::ConnectionService::sendOpponentDisconnectedResponse(const int userId) {
+    app::Player* player = m_playerService.findPlayer(userId);
+    if (player != nullptr) {
+        app::Connection* connection = findConnectionByUser(userId);
+        std::string message = std::to_string(app::Response::OPPONENT_DC) + '\n';
+        sendMessage(message, connection->getSocket());
+    }
+}
+
+void app::ConnectionService::sendGameResumedResponse(const int userId) {
+    app::Player* player = m_playerService.findPlayer(userId);
+    if (player != nullptr) {
+        app::Connection* connection = findConnectionByUser(userId);
+        std::string message = std::to_string(app::Response::GAME_RESUMED) + '\n';
+        sendMessage(message, connection->getSocket());
     }
 }
 
@@ -50,14 +92,44 @@ void app::ConnectionService::sendMessage(const std::string &message, int socket)
 
 void app::ConnectionService::disconnect(const int socket) {
     app::Connection* connection = app::ConnectionRepository::getInstance().findOne(socket);
-    if (connection != nullptr) {
-        if (connection->getUserId() != 0) {
-            //TODO markovda delete player or set state disconnected
-        }
-
-        app::ConnectionRepository::getInstance().remove(socket);
-
+    if (connection == nullptr) {
+        return;
     }
+
+    if (connection->getUserId() != 0) {
+        app::Player* player = m_playerService.findPlayer(connection->getUserId());
+        if (player != nullptr) {
+            app::Game* game = app::GameRepository::getInstance().findOneByUserId(player->getUserId());
+            if (game != nullptr) {
+                switch (game->getState()) {
+                    case app::GameState::WAITING:
+                        app::GameRepository::getInstance().remove(game->getId());
+                        sendGameDeletedResponse(player->getUserId());
+                        m_playerService.deletePlayer(player->getUserId());
+                        break;
+                    case app::GameState::PLAYING:
+                        player->setState(app::PlayerState::DISCONNECTED);
+                        game->pause();
+                        /// Now opponent
+                        player = game->getPlayer1()->getState() != app::PlayerState::DISCONNECTED
+                                ? game->getPlayer1() : game->getPlayer2();
+                        sendOpponentDisconnectedResponse(player->getUserId());
+                        break;
+                    case app::GameState::PAUSED:
+                        /// Both players disconnected, deleting both players and the game too
+                        m_playerService.deletePlayer(player->getUserId());
+                        /// Opponent is the one with DC state
+                        player = game->getPlayer1()->getState() == app::PlayerState::DISCONNECTED
+                                ? game->getPlayer1() : game->getPlayer2();
+                        m_playerService.deletePlayer(player->getUserId());
+                        app::GameRepository::getInstance().remove(game->getId());
+                        break;
+                }
+            }
+        }
+    }
+
+    app::ConnectionRepository::getInstance().remove(socket);
 }
 
 bool app::ConnectionService::processInvalidRequest(const int socket) {
@@ -65,13 +137,7 @@ bool app::ConnectionService::processInvalidRequest(const int socket) {
     if (connection != nullptr) {
         connection->incErrCount();
         if (connection->getErrorCount() == app::Connection::MAX_ERROR_COUNT) {
-            /*app::Player* player = m_playerService.findPlayer(connection->getUserId());
-            if (player != nullptr) {
-                if (player->getState() != app::PlayerState::IN_LOBBY) {
-                    player->setState(app::PlayerState::DISCONNECTED);
-                }
-            }*/ //TODO markovda disconnect player, set state of game and player
-            app::ConnectionRepository::getInstance().remove(socket);
+            disconnect(socket);
             return true;
         }
     }

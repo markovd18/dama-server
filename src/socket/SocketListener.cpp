@@ -109,7 +109,8 @@ void SocketListener::acceptConnections() {
                     /**
                      * Check for login attempt has to be here, because here we know from which socket the request came from.
                      */
-                    if (response.getMessage().find(std::to_string(app::Response::NEW_LOGIN_OK)) == 0) {
+                    if ((response.getMessage().find(std::to_string(app::Response::NEW_LOGIN_OK)) == 0) ||
+                        (response.getMessage().find(std::to_string(app::Response::RECONNECT_OK)) == 0)) {
                         m_connectionService.findConnection(fileDescriptor)->setUserId(atoi(app::parseString(response.getMessage(), "|")[1].c_str()));
                     }
                     m_connectionService.sendResponse(response, fileDescriptor);

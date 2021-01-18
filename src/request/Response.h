@@ -22,6 +22,8 @@ namespace app {
         static constexpr int GET_GAMES_OK = 203;
         static constexpr int CREATE_GAME_OK = 204;
         static constexpr int EXIT_GAME_OK = 205;
+        static constexpr int JOIN_GAME_OK = 206;
+        static constexpr int GET_GAME_STATE_OK = 207;
         static constexpr int INVALID_NICKNAME = 400;
         static constexpr int INVALID_USERID = 401;
         static constexpr int CANNOT_RECONNECT = 402;
@@ -32,9 +34,18 @@ namespace app {
         static constexpr int CREATE_GAME_FAIL_ID = 407;
         static constexpr int EXIT_GAME_FAIL_ID = 408;
         static constexpr int EXIT_GAME_FAIL_STATE = 409;
+        static constexpr int JOIN_GAME_FAIL_ID = 410;
+        static constexpr int JOIN_GAME_FAIL_STATE = 411;
+        static constexpr int JOIN_GAME_FAIL_NICK = 412;
+        static constexpr int GET_GAME_STATE_FAIL_ID = 413;
+        static constexpr int GET_GAME_STATE_FAIL_STATE = 414;
 
         static constexpr int NEW_GAME = 250;
         static constexpr int GAME_DELETED = 260;
+        static constexpr int GAME_STARTED = 270;
+        static constexpr int OPPONENT_LEFT = 280;
+        static constexpr int OPPONENT_DC = 290;
+        static constexpr int GAME_RESUMED = 295;
     private: // private attributes
         bool m_wasValid;
         std::string m_message;

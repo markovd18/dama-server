@@ -48,11 +48,13 @@ void app::PlayerRepository::save(app::Player&& player) {
 }
 
 void app::PlayerRepository::remove(const int userId) {
-    for (int i = 0; i < m_players.size(); ++i) {
-        if (m_players[i].getUserId() == userId) {
-            m_players.erase(m_players.begin() + i);
-            return;
+    auto it = m_players.begin();
+    while (it != m_players.end()) {
+        if (it->getUserId() == userId) {
+            m_players.erase(it);
+            break;
         }
+        it++;
     }
 }
 

@@ -2,7 +2,6 @@
 // Author: markovd@students.zcu.cz
 //
 
-#include <stdexcept>
 #include "ConnectionRepository.h"
 #include "../../game/repository/PlayerRepository.h"
 
@@ -32,20 +31,19 @@ app::Connection *app::ConnectionRepository::findOne(const int socket) {
     return nullptr;
 }
 
-app::Connection app::ConnectionRepository::remove(const int socket) {
-    for (int i = 0; i < m_connections.size(); ++i) {
-        if (m_connections[i].getSocket() == socket) {
-            app::Connection connection(m_connections[i]);
-            m_connections.erase(m_connections.begin() + i);
-            return connection;
+void app::ConnectionRepository::remove(const int socket) {
+    auto it = m_connections.begin();
+    while (it != m_connections.end()) {
+        if (it->getSocket() == socket) {
+            m_connections.erase(it);
+            return;
         }
+        it++;
     }
-
-    throw std::invalid_argument("Connection from socket " + std::to_string(socket) + " not found!");
 }
 
-std::vector<app::Connection *> app::ConnectionRepository::findAllByPlayerState(app::PlayerState state) {
-    std::vector<app::Connection*> connections;
+std::list<app::Connection *> app::ConnectionRepository::findAllByPlayerState(app::PlayerState state) {
+    std::list<app::Connection*> connections;
     for (auto &connection : m_connections) {
         if (connection.getUserId() != 0) {
             app::Player* player = app::PlayerRepository::getInstance().findOne(connection.getUserId());

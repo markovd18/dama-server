@@ -19,7 +19,9 @@ namespace app {
         LOGOUT = 1,
         CREATE_GAME = 2,
         GET_GAMES = 3,
-        EXIT_GAME = 4
+        EXIT_GAME = 4,
+        JOIN_GAME = 5,
+        GET_GAME_STATE = 6
     };
 
     /**
@@ -29,7 +31,7 @@ namespace app {
      private:// private attributes
          static constexpr char tokenDelimiter = '|';
          static inline const std::string requestTypes[] = { "CONNECT", "LOGOUT", "CREATE_GAME", "GET_GAMES",
-                                                            "EXIT_GAME"};
+                                                            "EXIT_GAME", "JOIN_GAME", "GET_GAME_STATE"};
 
          app::PlayerService m_playerService;
          app::GameService m_gameService;
@@ -62,6 +64,10 @@ namespace app {
          app::Response processExitGameRequest(int userId);
 
          app::Response processGetGamesRequest(int userId);
+
+         app::Response processJoinGameRequest(int userId, const std::string &opponentNick);
+
+         app::Response processGetGameStateRequest(int userId);
      };
 }
 
