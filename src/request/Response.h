@@ -15,7 +15,6 @@ namespace app {
      */
     class Response {
     public: // public attributes
-        static constexpr int GENERAL_ERROR = 450;
         static constexpr int NEW_LOGIN_OK = 200;
         static constexpr int RECONNECT_OK = 201;
         static constexpr int LOGOUT_OK = 202;
@@ -24,28 +23,25 @@ namespace app {
         static constexpr int EXIT_GAME_OK = 205;
         static constexpr int JOIN_GAME_OK = 206;
         static constexpr int GET_GAME_STATE_OK = 207;
-        static constexpr int INVALID_NICKNAME = 400;
-        static constexpr int INVALID_USERID = 401;
-        static constexpr int CANNOT_RECONNECT = 402;
-        static constexpr int LOGOUT_INVALID_USER = 403;
-        static constexpr int CANNOT_LOGOUT = 404;
-        static constexpr int GET_GAMES_FAIL = 405;
-        static constexpr int CREATE_GAME_FAIL_STATE = 406;
-        static constexpr int CREATE_GAME_FAIL_ID = 407;
-        static constexpr int EXIT_GAME_FAIL_ID = 408;
-        static constexpr int EXIT_GAME_FAIL_STATE = 409;
-        static constexpr int JOIN_GAME_FAIL_ID = 410;
-        static constexpr int JOIN_GAME_FAIL_STATE = 411;
-        static constexpr int JOIN_GAME_FAIL_NICK = 412;
-        static constexpr int GET_GAME_STATE_FAIL_ID = 413;
-        static constexpr int GET_GAME_STATE_FAIL_STATE = 414;
+        static constexpr int TURN_OK = 208;
 
+        static constexpr int INVALID_NICKNAME = 400;
+        static constexpr int CANNOT_RECONNECT = 401;
+        static constexpr int JOIN_GAME_FAIL_NICK = 402;
+        static constexpr int INVALID_TURN = 403;
+
+        static constexpr int GAME_OVER = 210;
         static constexpr int NEW_GAME = 250;
         static constexpr int GAME_DELETED = 260;
         static constexpr int GAME_STARTED = 270;
         static constexpr int OPPONENT_LEFT = 280;
         static constexpr int OPPONENT_DC = 290;
         static constexpr int GAME_RESUMED = 295;
+
+        static constexpr int INVALID_ID = 410;
+        static constexpr int INVALID_STATE = 420;
+        static constexpr int GENERAL_ERROR = 450;
+        static constexpr int CONNECTION_DROPPED = 460;
     private: // private attributes
         bool m_wasValid;
         std::string m_message;

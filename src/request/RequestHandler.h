@@ -21,7 +21,8 @@ namespace app {
         GET_GAMES = 3,
         EXIT_GAME = 4,
         JOIN_GAME = 5,
-        GET_GAME_STATE = 6
+        GET_GAME_STATE = 6,
+        TURN = 7
     };
 
     /**
@@ -31,7 +32,7 @@ namespace app {
      private:// private attributes
          static constexpr char tokenDelimiter = '|';
          static inline const std::string requestTypes[] = { "CONNECT", "LOGOUT", "CREATE_GAME", "GET_GAMES",
-                                                            "EXIT_GAME", "JOIN_GAME", "GET_GAME_STATE"};
+                                                            "EXIT_GAME", "JOIN_GAME", "GET_GAME_STATE", "TURN"};
 
          app::PlayerService m_playerService;
          app::GameService m_gameService;
@@ -46,7 +47,7 @@ namespace app {
           * @return response to the request
           * @throw invalid_argument if request is invalid (format-wise or logically)
           */
-         app::Response processRequest(const std::string &request);
+         app::Response processRequest(const std::string &request, int socket);
 
          /**
           * Returns string representation (name) of given request type.
@@ -68,6 +69,8 @@ namespace app {
          app::Response processJoinGameRequest(int userId, const std::string &opponentNick);
 
          app::Response processGetGameStateRequest(int userId);
+
+         app::Response processTurnRequest(int userId, int fromX, int fromY, int toX, int toY);
      };
 }
 

@@ -9,13 +9,17 @@
 #include "../utils/ParameterUtils.h"
 #include "../utils/Logger.h"
 
-app::Response app::RequestHandler::processRequest(const std::string &request) {
+app::Response app::RequestHandler::processRequest(const std::string &request, const int socket) {
     std::vector<std::string> tokens(app::parseString(request, std::string{tokenDelimiter}));
     if (tokens.empty() || (tokens.size() < 2) || (!isNumber(tokens[0]))) {
         return app::Response(std::to_string(app::Response::GENERAL_ERROR) + '\n', false);
     }
 
     int userId = atoi(tokens[0].c_str());
+    app::Connection* connection = m_connectionService.findConnection(socket);
+    if (connection->getUserId() != userId) {
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
+    }
     if (tokens[1] == getRequestTypeName(RequestType::CONNECT)) {
         /// Request to login
         if (tokens.size() == 3) {
@@ -51,6 +55,25 @@ app::Response app::RequestHandler::processRequest(const std::string &request) {
         if (tokens.size() == 2) {
             return processGetGameStateRequest(userId);
         }
+    } else if (tokens[1] == getRequestTypeName(RequestType::TURN)) {
+        /// Request to move the token
+        if (tokens.size() == 4) {
+            std::vector<std::string> fromXY = parseString(tokens[2], ",");
+            std::vector<std::string> toXY = parseString(tokens[3], ",");
+            if (fromXY.size() != 2 || toXY.size() != 2) {
+                /// Return 450
+                return app::Response(std::to_string(app::Response::GENERAL_ERROR) + '\n', false);
+            }
+            if (!isNumber(fromXY[0]) || !isNumber(fromXY[1]) ||
+            !isNumber(toXY[0]) || !isNumber(toXY[1])) {
+                /// Return invalid move
+                return app::Response(std::to_string(app::Response::INVALID_TURN) + '\n', false);
+            }
+
+            return processTurnRequest(userId,
+                                      atoi(fromXY[0].c_str()),atoi(fromXY[1].c_str()),
+                                      atoi(toXY[0].c_str()), atoi(toXY[1].c_str()));
+        }
     }
 
     return app::Response(std::to_string(app::Response::GENERAL_ERROR) + '\n', false);
@@ -67,13 +90,12 @@ app::Response app::RequestHandler::processLoginRequest(const int userId, const s
     }
 
     if (userId != 0) {
-        return app::Response(std::to_string(app::Response::INVALID_USERID) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
 
     app::Player* player = m_playerService.findPlayer(nickname);
     if (player != nullptr) { /// Player already exists, reconnect request
         if (player->getState() == app::PlayerState::DISCONNECTED) {
-            //TODO markovda reconnect to previous state based on the game he's in
             app::Game* game = m_gameService.findGame(player->getUserId());
             if (game != nullptr) {
                 app::Player* opponent = game->getPlayer1()->getState() != app::PlayerState::DISCONNECTED
@@ -84,7 +106,7 @@ app::Response app::RequestHandler::processLoginRequest(const int userId, const s
                     player->setState(app::PlayerState::IN_GAME_T);
                 }
                 game->start();
-                // send response that game is resumed
+                /// Send response that game is resumed
                 m_connectionService.sendGameResumedResponse(opponent->getUserId());
             }
             return app::Response(std::to_string(app::Response::RECONNECT_OK) + tokenDelimiter + std::to_string(player->getUserId()) + '\n', true);
@@ -105,11 +127,11 @@ app::Response app::RequestHandler::processLogoutRequest(const int userId) {
 
     if (player == nullptr) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
-        return app::Response(std::to_string(app::Response::LOGOUT_INVALID_USER) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
     if (player->getState() != app::PlayerState::IN_LOBBY) {
         app::Logger::getInstance().error("Only players in lobby can logout!");
-        return app::Response(std::to_string(app::Response::CANNOT_LOGOUT) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
     }
 
     m_playerService.deletePlayer(userId);
@@ -124,11 +146,11 @@ app::Response app::RequestHandler::processCreateGameRequest(const int userId) {
 
     if (player == nullptr) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
-        return app::Response(std::to_string(app::Response::CREATE_GAME_FAIL_ID) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
     if (player->getState() != app::PlayerState::IN_LOBBY) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not in lobby!");
-        return app::Response(std::to_string(app::Response::CREATE_GAME_FAIL_STATE) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
     }
 
     m_gameService.createNewGame(player);
@@ -143,12 +165,12 @@ app::Response app::RequestHandler::processExitGameRequest(const int userId) {
 
     if (player == nullptr) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
-        return app::Response(std::to_string(app::Response::EXIT_GAME_FAIL_ID) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
     app::PlayerState state = player->getState();
     if ((state != app::PlayerState::IN_GAME_T) && (state != app::PlayerState::IN_GAME_W)) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not in a game, cannot exit.");
-        return app::Response(std::to_string(app::Response::EXIT_GAME_FAIL_STATE) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
     }
 
     m_gameService.removePlayerFromGame(userId);
@@ -159,7 +181,7 @@ app::Response app::RequestHandler::processGetGamesRequest(const int userId) {
     app::Player* player = m_playerService.findPlayer(userId);
     if (player == nullptr) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
-        return app::Response(std::to_string(app::Response::GET_GAMES_FAIL) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
 
     std::list<app::Game*> lobbyGames = m_gameService.findLobbyGames();
@@ -181,12 +203,12 @@ app::Response app::RequestHandler::processJoinGameRequest(const int userId, cons
     app::Player* player = m_playerService.findPlayer(userId);
     if (player == nullptr) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
-        return app::Response(std::to_string(app::Response::JOIN_GAME_FAIL_ID) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
 
     if (player->getState() != app::PlayerState::IN_LOBBY) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not in a lobby, cannot join a game.");
-        return app::Response(std::to_string(app::Response::JOIN_GAME_FAIL_STATE) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
     }
 
     app::Game* joinedGame = m_gameService.findWaitingGame(opponentNick);
@@ -204,30 +226,96 @@ app::Response app::RequestHandler::processGetGameStateRequest(const int userId) 
     app::Player* player = m_playerService.findPlayer(userId);
     if (player == nullptr) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
-        return app::Response(std::to_string(app::Response::GET_GAME_STATE_FAIL_ID) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
     }
 
     app::PlayerState state = player->getState();
     if ((state != app::PlayerState::IN_GAME_T) && (state != app::PlayerState::IN_GAME_W)) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not in a game, cannot request game state!");
-        return app::Response(std::to_string(app::Response::GET_GAME_STATE_FAIL_STATE) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
     }
 
     app::Game* game = m_gameService.findGame(userId);
     if (game == nullptr || game->getState() == app::GameState::WAITING) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not in a running game!");
-        return app::Response(std::to_string(app::Response::GET_GAME_STATE_FAIL_STATE) + '\n', false);
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
     }
 
+    app::Player* playerOnTurn = game->getPlayer1()->getState() == app::PlayerState::IN_GAME_T
+            ? game->getPlayer1() : game->getPlayer2();
     std::string message = std::to_string(app::Response::GET_GAME_STATE_OK) + tokenDelimiter + game->getPlayer1()->getNickname();
-    for (const auto &token : *game->getPlayer1Tokens()) {
+    for (const auto &token : game->getPlayer1Tokens()) {
         message += ',' + std::to_string(token.getPositionX()) + ',' + std::to_string(token.getPositionY());
+    }
+    message += tokenDelimiter;
+    for (const auto &draught : game->getPlayer1Draughts()) {
+        message += std::to_string(draught.getPositionX()) + ',' + std::to_string(draught.getPositionY());
     }
     message += tokenDelimiter + game->getPlayer2()->getNickname();
-    for (const auto &token : *game->getPlayer2Tokens()) {
+    for (const auto &token : game->getPlayer2Tokens()) {
         message += ',' + std::to_string(token.getPositionX()) + ',' + std::to_string(token.getPositionY());
     }
-    message += '\n';
+    message += tokenDelimiter;
+    for (const auto &draught : game->getPlayer2Draughts()) {
+        message += std::to_string(draught.getPositionX()) + ',' + std::to_string(draught.getPositionY());
+    }
+    message += tokenDelimiter + playerOnTurn->getNickname() + '\n';
 
     return app::Response(message, true);
+}
+
+app::Response app::RequestHandler::processTurnRequest(const int userId,
+                                                      const int fromX, const int fromY,
+                                                      const int toX, const int toY) {
+    app::Player* player = m_playerService.findPlayer(userId);
+    if (player == nullptr) {
+        app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not found!");
+        /// return response
+        return app::Response(std::to_string(app::Response::INVALID_ID) + '\n', false);
+    }
+    if (player->getState() != app::PlayerState::IN_GAME_T) {
+        app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " not on turn!");
+        return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
+        /// return response
+    }
+
+    if (!m_gameService.processTurn(userId, fromX, fromY, toX, toY)) {
+        app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " turned with invalid coordinates.");
+        return app::Response(std::to_string(app::Response::INVALID_TURN) + '\n', false);
+        /// return invalid move
+
+    }
+
+    app::Game* game = m_gameService.findGame(userId);
+    app::Player* opponentPlayer = game->getPlayer1()->getUserId() == userId ? game->getPlayer2() : game->getPlayer1();
+    app::Connection* opponent = m_connectionService.findConnectionByUser(opponentPlayer->getUserId());
+    if (game->isOver()) {
+        /// Send game over responses and delete game
+        app::Response response(std::to_string(app::Response::GAME_OVER) + '\n', true);
+        m_connectionService.sendResponse(response, opponent->getSocket());
+        m_gameService.removeGame(game->getId());
+        return response;
+    }
+    /// return ok turn
+    std::string message = std::to_string(app::Response::TURN_OK) + tokenDelimiter + game->getPlayer1()->getNickname();
+    for (const auto &token : game->getPlayer1Tokens()) {
+        message += ',' + std::to_string(token.getPositionX()) + ',' + std::to_string(token.getPositionY());
+    }
+    message += tokenDelimiter;
+    for (const auto &draught : game->getPlayer1Draughts()) {
+        message += std::to_string(draught.getPositionX()) + ',' + std::to_string(draught.getPositionY());
+    }
+    message += tokenDelimiter + game->getPlayer2()->getNickname();
+    for (const auto &token : game->getPlayer2Tokens()) {
+        message += ',' + std::to_string(token.getPositionX()) + ',' + std::to_string(token.getPositionY());
+    }
+    message += tokenDelimiter;
+    for (const auto &draught : game->getPlayer2Draughts()) {
+        message += std::to_string(draught.getPositionX()) + ',' + std::to_string(draught.getPositionY());
+    }
+    message += tokenDelimiter + opponentPlayer->getNickname() + '\n';
+
+    app::Response response(message, true);
+    m_connectionService.sendResponse(response, opponent->getSocket());
+    return response;
 }

@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cmath>
 #include "../app/config.h"
 #include "ParameterUtils.h"
 
@@ -133,6 +134,10 @@ namespace app {
         const auto strRange = strEnd - strBegin + 1;
 
         return string.substr(strBegin, strRange);
+    }
+
+    float distance(int ax, int ay, int bx, int by) {
+        return std::sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by));
     }
 }
 

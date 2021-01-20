@@ -54,8 +54,10 @@ void app::ConnectionService::sendOpponentLeftResponse(const int userId) {
     app::Player* player = m_playerService.findPlayer(userId);
     if (player != nullptr) {
         app::Connection* connection = findConnectionByUser(userId);
-        std::string message = std::to_string(app::Response::OPPONENT_LEFT) + '\n';
-        sendMessage(message, connection->getSocket());
+        if (connection != nullptr) {
+            std::string message = std::to_string(app::Response::OPPONENT_LEFT) + '\n';
+            sendMessage(message, connection->getSocket());
+        }
     }
 }
 
@@ -129,6 +131,7 @@ void app::ConnectionService::disconnect(const int socket) {
         }
     }
 
+    sendResponse(app::Response(std::to_string(app::Response::CONNECTION_DROPPED) + '\n', true), socket);
     app::ConnectionRepository::getInstance().remove(socket);
 }
 

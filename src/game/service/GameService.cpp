@@ -57,18 +57,19 @@ void app::GameService::startNewGame(app::Game *game) {
     }
 }
 
-std::array<const std::vector<app::Token>*, 2> app::GameService::getGameTokens(const int userId) {
-    app::Game* game = app::GameRepository::getInstance().findOneByUserId(userId);
-    if (game == nullptr) {
-        throw std::invalid_argument(std::string("User with ID ") + std::to_string(userId) + " not in a game!");
-    }
-
-    const std::vector<app::Token>* playerOneTokens = game->getPlayer1Tokens();
-    const std::vector<app::Token>* playerTwoTokens = game->getPlayer2Tokens();
-
-    return std::array{ playerOneTokens, playerTwoTokens };
+app::Game *app::GameService::findGame(const int userId) {
+    return app::GameRepository::getInstance().findOneByUserId(userId);
 }
 
-app::Game *app::GameService::findGame(int userId) {
-    return app::GameRepository::getInstance().findOneByUserId(userId);
+bool app::GameService::processTurn(const int userId, const int fromX, const int fromY, const int toX, const int toY) {
+    app::Game* game = app::GameRepository::getInstance().findOneByUserId(userId);
+    if (game == nullptr) {
+        return false;
+    }
+
+    return game->turn(userId, fromX, fromY, toX, toY);
+}
+
+void app::GameService::removeGame(const int gameId) {
+    app::GameRepository::getInstance().remove(gameId);
 }

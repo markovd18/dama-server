@@ -105,7 +105,7 @@ void SocketListener::acceptConnections() {
                     recv(fileDescriptor, buffer.data(), BUFFER_LENGTH, 0);
                     app::Logger::getInstance().debug(std::string("Incomming message: ") + buffer.data());
 
-                    app::Response response(requestHandler.processRequest(buffer.data()));
+                    app::Response response(requestHandler.processRequest(buffer.data(), fileDescriptor));
                     /**
                      * Check for login attempt has to be here, because here we know from which socket the request came from.
                      */

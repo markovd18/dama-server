@@ -64,6 +64,8 @@ namespace app {
      * @return trimmed string
      */
     std::string trimString(const std::string& string);
+
+    float distance(int ax, int ay, int bx, int by);
 }
 
 

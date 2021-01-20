@@ -32,9 +32,11 @@ namespace app {
 
         void startNewGame(Game *game);
 
-        std::array<const std::vector<app::Token>*, 2> getGameTokens(int userId);
-
         app::Game* findGame(int userId);
+
+        bool processTurn(int userId, int fromX, int fromY, int toX, int toY);
+
+        void removeGame(int gameId);
     };
 }
 

@@ -27,14 +27,17 @@ namespace app {
      * Class representing individual games.
      */
     class Game {
+    public: // public attributer
+        static constexpr int ROW_COUNT = 6;
     private: // private attributes
-        static constexpr int playersTokenCount = 6;
         int m_gameId = 0;
         app::Player* m_player1;
         app::Player* m_player2;
         app::GameState m_state;
-        std::vector<app::Token> player1Tokens;
-        std::vector<app::Token> player2Tokens;
+        std::vector<app::Token> m_player1Draughts;
+        std::vector<app::Token> m_player2Draughts;
+        int m_board[ROW_COUNT][ROW_COUNT] { 0 };
+        bool m_isOver = false;
     public: // public methods
         Game(app::Player* player1, app::Player* player2);
         app::Player* getPlayer1();
@@ -46,8 +49,12 @@ namespace app {
         [[nodiscard]] bool isEmpty() const;
         [[nodiscard]] int getId() const;
         [[nodiscard]] GameState getState() const;
-        [[nodiscard]] const std::vector<app::Token>* getPlayer1Tokens() const;
-        [[nodiscard]] const std::vector<app::Token>* getPlayer2Tokens() const;
+        [[nodiscard]] std::vector<app::Token> getPlayer1Tokens() const;
+        [[nodiscard]] std::vector<app::Token> getPlayer2Tokens() const;
+        [[nodiscard]] std::vector<app::Token> getPlayer1Draughts() const;
+        [[nodiscard]] std::vector<app::Token> getPlayer2Draughts() const;
+        [[nodiscard]] bool isOver() const;
+        bool turn(int userId, int fromX, int fromY, int toX, int toY);
 
         /**
          * This function sets ID of the game to given value. Note, that this method should not be used anywhere
@@ -57,6 +64,12 @@ namespace app {
 
     private: // private methods
         void initializeTokens();
+        bool removeTokensBetweenPoints(int fromX, int fromY, int toX, int toY, const std::vector<app::Token>& tokens);
+        bool isDraught(int x, int y) const;
+
+        void moveDraught(const int fromX, const int fromY, const int toX, const int toY, Player *player);
+
+        void removeDraught(int x, int y);
     };
 }
 
