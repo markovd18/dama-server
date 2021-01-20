@@ -117,7 +117,14 @@ namespace app {
         }
 
         bool valid = std::regex_match(nickname, std::regex("[a-zA-Z0-9]*"));
-        return valid;
+        if (!valid) {
+            return  false;
+        }
+        if (nickname.size() > 20) {
+            return false;
+        }
+
+        return true;
     }
 
     std::string trimString(const std::string& string) {
