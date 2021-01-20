@@ -74,6 +74,10 @@ app::Response app::RequestHandler::processRequest(const std::string &request, co
                                       atoi(fromXY[0].c_str()),atoi(fromXY[1].c_str()),
                                       atoi(toXY[0].c_str()), atoi(toXY[1].c_str()));
         }
+    } else if (tokens[1] == getRequestTypeName(RequestType::PING)) {
+        if (tokens.size() == 2) {
+            return app::Response(std::to_string(app::Response::PING) + '\n', true);
+        }
     }
 
     return app::Response(std::to_string(app::Response::GENERAL_ERROR) + '\n', false);

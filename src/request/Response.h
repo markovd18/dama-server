@@ -42,6 +42,8 @@ namespace app {
         static constexpr int INVALID_STATE = 420;
         static constexpr int GENERAL_ERROR = 450;
         static constexpr int CONNECTION_DROPPED = 460;
+
+        static constexpr int PING = 100;
     private: // private attributes
         bool m_wasValid;
         std::string m_message;

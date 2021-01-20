@@ -22,7 +22,8 @@ namespace app {
         EXIT_GAME = 4,
         JOIN_GAME = 5,
         GET_GAME_STATE = 6,
-        TURN = 7
+        TURN = 7,
+        PING = 8
     };
 
     /**
@@ -32,7 +33,7 @@ namespace app {
      private:// private attributes
          static constexpr char tokenDelimiter = '|';
          static inline const std::string requestTypes[] = { "CONNECT", "LOGOUT", "CREATE_GAME", "GET_GAMES",
-                                                            "EXIT_GAME", "JOIN_GAME", "GET_GAME_STATE", "TURN"};
+                                                            "EXIT_GAME", "JOIN_GAME", "GET_GAME_STATE", "TURN", "PING"};
 
          app::PlayerService m_playerService;
          app::GameService m_gameService;
