@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(GCC_COMPILE_FLAGS "--std=c++17 -lstdc++fs")
-set(CMAKE_CXX_FLAGS ${GCC_COMPILE_FLAGS})
+set(CMAKE_CXX_LINK_LIBRARY_FLAG  ${GCC_COMPILE_FLAGS})
 
 # find all files in src/*** subdirectories
 file(GLOB APP src/app/*.h src/app/*.cpp)
