@@ -43,7 +43,7 @@ public: //public methods
      * @param port port to listen on
      * @param maxConnections maximum number of connections allowed at the same time
      */
-    explicit SocketListener(const app::config& configuration);
+    explicit SocketListener(app::config& configuration);
     /**
      * In destructor we close the open socket.
      */

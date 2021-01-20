@@ -19,7 +19,7 @@
 #include "../utils/Logger.h"
 #include "../request/RequestHandler.h"
 
-SocketListener::SocketListener(const app::config& configuration) : m_maxConnectionsAllowed(configuration.maxConnections) {
+SocketListener::SocketListener(app::config& configuration) : m_maxConnectionsAllowed(configuration.maxConnections) {
     if (!app::isIpAddress(configuration.address)) {
         throw std::invalid_argument("Given address is invalid!");
     }
@@ -35,6 +35,10 @@ SocketListener::SocketListener(const app::config& configuration) : m_maxConnecti
     int enableOpt = 1;
     if (setsockopt(m_serverSocket, SOL_SOCKET, SO_REUSEADDR, &enableOpt, sizeof(int)) < 0) {
         app::Logger::getInstance().warn("Enabling address re-usability failed!");
+    }
+
+    if (configuration.address == "localhost") {
+        configuration.address = "127.0.0.1";
     }
 
     struct sockaddr_in myAddress {};
