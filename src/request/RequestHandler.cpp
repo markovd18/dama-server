@@ -278,6 +278,11 @@ app::Response app::RequestHandler::processTurnRequest(const int userId,
         return app::Response(std::to_string(app::Response::INVALID_STATE) + '\n', false);
         /// return response
     }
+    app::Game* game = m_gameService.findGame(userId);
+    if (game->getState() != app::GameState::PLAYING) {
+        app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " is not in a running game!");
+
+    }
 
     if (!m_gameService.processTurn(userId, fromX, fromY, toX, toY)) {
         app::Logger::getInstance().error("User with ID " + std::to_string(userId) + " turned with invalid coordinates.");
@@ -286,7 +291,6 @@ app::Response app::RequestHandler::processTurnRequest(const int userId,
 
     }
 
-    app::Game* game = m_gameService.findGame(userId);
     app::Player* opponentPlayer = game->getPlayer1()->getUserId() == userId ? game->getPlayer2() : game->getPlayer1();
     app::Connection* opponent = m_connectionService.findConnectionByUser(opponentPlayer->getUserId());
     if (game->isOver()) {

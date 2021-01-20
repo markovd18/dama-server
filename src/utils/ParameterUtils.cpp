@@ -7,6 +7,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <regex>
 #include "../app/config.h"
 #include "ParameterUtils.h"
 
@@ -19,9 +20,11 @@ constexpr unsigned int HTTP_PORT = 80;
 constexpr unsigned int POP3_PORT = 110;
 constexpr unsigned int SSL_PORT = 443;
 
-constexpr unsigned int MIN_CONNECTIONS = 2;
-constexpr unsigned int MIN_PARAMS_NUM = 5;
-constexpr unsigned int MIN_GAMES = 1;
+constexpr unsigned int MAX_PORT = 65535;
+
+constexpr unsigned int MAX_CONNECTIONS = 10;
+constexpr unsigned int MIN_PARAMS_NUM = 3;
+constexpr unsigned int MAX_GAMES = 10;
 
 constexpr unsigned int MAX_NICK_LENGTH = 20;
 
@@ -38,16 +41,8 @@ namespace app {
         if (!isNumber(params[2]) || ((port = atoi(params[2])) < 0)) {
             throw std::invalid_argument("Invalid port number passed!");
         }
-        int maxConnections;
-        if (!isNumber(params[3]) || ((maxConnections = atoi(params[3])) < MIN_CONNECTIONS)) {
-            throw std::invalid_argument("Invalid number of max connections passed!");
-        }
-        int maxGames;
-        if (!isNumber(params[4]) || ((maxGames = atoi(params[4])) < MIN_GAMES)) {
-            throw std::invalid_argument("Invalid number of max connections passed!");
-        }
 
-        app::config configuration { params[1], port, maxConnections, maxGames};
+        app::config configuration { params[1], port, MAX_CONNECTIONS, MAX_GAMES};
         return configuration;
     }
 
@@ -63,6 +58,9 @@ namespace app {
             case SSL_PORT:
                 return false;
             default:
+                if (port > MAX_PORT) {
+                    return false;
+                }
                 return true;
         }
     }
@@ -114,13 +112,12 @@ namespace app {
     }
 
     bool isValidNickname(const std::string& nickname) {
-        if (nickname.size() > MAX_NICK_LENGTH) {
+        if (nickname.size() > MAX_NICK_LENGTH || nickname.empty()) {
             return false;
         }
 
-        return std::all_of(nickname.begin(), nickname.end(), [](const unsigned char c) {
-            return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= 0 && c <= 9));
-        });
+        bool valid = std::regex_match(nickname, std::regex("[a-zA-Z0-9]*"));
+        return valid;
     }
 
     std::string trimString(const std::string& string) {

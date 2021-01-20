@@ -127,6 +127,8 @@ void app::ConnectionService::disconnect(const int socket) {
                         app::GameRepository::getInstance().remove(game->getId());
                         break;
                 }
+            } else {
+                m_playerService.deletePlayer(player->getUserId());
             }
         }
     }
