@@ -33,3 +33,4 @@ add_executable(dama_server ${SOURCES})
 
 #setting output directory to root directory
 set_target_properties(dama_server PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+target_link_libraries(dama_server stdc++fs)
