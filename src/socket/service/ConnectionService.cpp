@@ -2,7 +2,7 @@
 // Author: markovd@students.zcu.cz
 //
 
-#include <uv.h>
+#include <arpa/inet.h>
 #include "ConnectionService.h"
 #include "../repository/ConnectionRepository.h"
 #include "../../utils/Logger.h"
