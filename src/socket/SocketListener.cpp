@@ -9,7 +9,7 @@
 #include <asm/ioctls.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <uv.h>
+#include <arpa/inet.h>
 #include <string>
 #include <algorithm>
 #include "SocketListener.h"
